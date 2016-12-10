@@ -38,4 +38,23 @@ def stats_for_guide(name)
 	.sort_by { |x| x[:student] }
 end
 
-puts stats_for_guide 'valores-y-funciones'
+def sum_stat(acum, elem, field)
+	acum[field] + elem[field.to_s].to_i
+end
+
+def aggregate_stats(stats)
+	stats
+	.map {|s| s[:exercises]}
+	.inject(passed: 0, failed: 0, passed_with_warnings: 0) do |acum, elem|
+		{ passed: sum_stat(acum, elem, :passed), failed: sum_stat(acum, elem, :failed), passed_with_warnings: sum_stat(acum, elem, :passed_with_warnings) }
+	end
+end
+
+def stats_for_category(name)
+	@categories[name]
+		.flat_map {|g| stats_for_guide g}
+		.group_by {|g| g[:student]}
+		.map {|student, stats| { student: student, exercises: aggregate_stats(stats) }}
+end
+
+puts stats_for_category :composition
