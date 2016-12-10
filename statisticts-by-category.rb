@@ -61,4 +61,8 @@ def category_csv(name)
 	name.to_s + "\n" + stats_for_category(name).map {|s| [s[:student], s[:exercises][:passed], s[:exercises][:passed_with_warnings], s[:exercises][:failed]].join(',') }.join("\n")
 end
 
-puts category_csv :composition
+def stats_csv
+	@categories.map {|c, _| category_csv c}.join "\n\n"
+end
+
+puts stats_csv
