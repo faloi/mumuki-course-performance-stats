@@ -1,3 +1,4 @@
+require 'active_support/all'
 require 'json'
 require 'rest-client'
 
@@ -22,6 +23,10 @@ abort 'I need a classroom access token to do my job. Place it on a file named AC
 
 def make_slug(guide)
 	"pdep-utn/mumuki-guia-funcional-#{guide}"
+end
+
+def fetch_guide_exercises_count(name)
+	JSON.parse(RestClient.get "http://bibliotheca.mumuki.io/guides/#{make_slug name}")['exercises'].length
 end
 
 def fetch_guide_progress(name)
@@ -57,8 +62,12 @@ def stats_for_category(name)
 		.map {|student, stats| { student: student, exercises: aggregate_stats(stats) }}
 end
 
+def exercises_count_for_category(name)
+	@categories[name].sum {|g| fetch_guide_exercises_count g}
+end
+
 def category_csv(name)
-	name.to_s + "\n" + stats_for_category(name).map {|s| [s[:student], s[:exercises][:passed], s[:exercises][:passed_with_warnings], s[:exercises][:failed]].join(',') }.join("\n")
+	"#{name}, #{exercises_count_for_category name}" + "\n" + stats_for_category(name).map {|s| [s[:student], s[:exercises][:passed], s[:exercises][:passed_with_warnings], s[:exercises][:failed]].join(',') }.join("\n")
 end
 
 def stats_csv
